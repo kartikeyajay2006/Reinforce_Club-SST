@@ -1,40 +1,52 @@
-🧠✨ AI Image Classifier
+<div align="center">
 
-A smart and interactive web app built with Streamlit that uses deep learning to recognize what’s inside your images — in just seconds! 🚀
+# 🔢 Seeing MNIST in 2D: PCA → t-SNE
 
-🌐 Live Demo
+**Compressing 60,000 handwritten digits from 784 dimensions to 2, so the ten digit classes show up as separate clusters.**
 
-🔗 Try it now: https://ai-image-classifier-yw8jmptfdt64yxxyxprabj.streamlit.app/
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kartikeyajay2006/Reinforce_Club-SST/blob/main/pca_t_sne.ipynb)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-PCA_·_t--SNE-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)](https://scikit-learn.org/)
+[![pandas](https://img.shields.io/badge/pandas-data-150458?style=flat-square&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![Matplotlib](https://img.shields.io/badge/Matplotlib-plots-11557c?style=flat-square)](https://matplotlib.org/)
 
-🖼️ About The Project
+</div>
 
-The AI Image Classifier is a lightweight, web-based tool that allows you to upload any image (JPG/PNG) and instantly get predictions about what’s in it 🤖.
+---
 
-It harnesses the power of MobileNetV2, a pre-trained convolutional neural network, to analyze images and display the top 3 predictions with their confidence scores 📊.
+## The question
 
-Whether it’s a 🐶 dog, 🚗 car, or ☕ coffee cup — this app figures it out instantly! ⚡
+Each MNIST image is 28 × 28 = **784 pixel features**. Can we squeeze that down to **2 numbers per image** and still see that a "3" is not a "7"?
 
-⚙️ Tech Stack & Tools
+## Pipeline
 
-🧩 Python – The backbone of the entire project.
-🎨 Streamlit – For building a smooth, interactive, and modern web UI.
-🧠 TensorFlow / Keras – To load and run the pre-trained MobileNetV2 model.
-🖼️ OpenCV – For image preprocessing (resizing and formatting).
-📷 Pillow (PIL) – To handle uploaded image files seamlessly.
+```mermaid
+flowchart LR
+    A[MNIST train CSV<br/>60,000 × 784] --> B[StandardScaler]
+    B --> C[PCA<br/>784 → 50]
+    C --> D[Random sample<br/>5,000 points]
+    D --> E[t-SNE<br/>50 → 2 · perplexity 30]
+    E --> F[Scatter plot<br/>coloured by digit]
+```
 
-🔍 How It Works
+| Step | Why |
+|---|---|
+| **Standardise** | PCA is variance-driven, so pixels need a common scale |
+| **PCA to 50 components** | Removes noise and makes t-SNE much faster, which is the standard practice before t-SNE on high-dimensional data |
+| **Sample 5,000 points** | t-SNE is roughly O(n²), and 5,000 points still show the structure clearly |
+| **t-SNE to 2D** (`perplexity=30`, `random_state=42`) | Keeps *local* neighbourhoods, so similar digits land next to each other |
 
-1️⃣ Upload an Image
-➡️ Choose any image file (JPG or PNG) from your device.
+## What you see
 
-2️⃣ Model Preprocessing
-🧮 The image is resized and normalized using OpenCV and preprocess_input().
+Ten mostly separate clusters, one per digit. Visually similar digits (4 and 9, 3 and 5, 7 and 1) sit next to each other or overlap a little, which is exactly where a classifier would find it hardest.
 
-3️⃣ Prediction Time
-🤖 The MobileNetV2 model runs inference on the processed image.
+**PCA vs t-SNE in one line:** PCA is a linear projection that keeps global variance. t-SNE is a non-linear embedding that keeps local neighbourhoods. Running PCA first and t-SNE second gives you both speed and clear clusters.
 
-4️⃣ Results Displayed
-📊 The app shows the top 3 predicted labels along with their confidence percentages.
+## Run it
 
-5️⃣ Visual Output
-🖼️ You see your uploaded image alongside the predictions — neat and instant! ⚡
+Open the notebook in Colab with the badge above, upload `mnist_train.csv` (the [Kaggle MNIST CSV](https://www.kaggle.com/datasets/oddrationale/mnist-in-csv)), and run all cells.
+
+> `model.py` in this repo is a small MobileNetV2 + Streamlit image-classifier demo. Its full version lives in [ai-image-classifier](https://github.com/kartikeyajay2006/ai-image-classifier).
+
+## Author
+
+**[Kartikeya Yadav](https://github.com/kartikeyajay2006)** · [LinkedIn](https://www.linkedin.com/in/kartikeya2006/)
